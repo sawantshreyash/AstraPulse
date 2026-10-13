@@ -1,0 +1,127 @@
+﻿
+/* =========================================================
+   ASTRAPULSE — SPATIAL DESIGN TOKENS
+   Theme: Midnight Navy / Electric Blue / Cyan
+   ========================================================= */
+
+:root {
+  font-family: Inter, "Segoe UI", system-ui, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  color-scheme: dark;
+
+  /* Base surfaces */
+  --bg: #07111f;
+  --bg-raised: #0b192a;
+  --surface: #0d1c2e;
+  --surface-raised: #12243a;
+  --surface-hover: #172d46;
+  --surface-muted: #091626;
+  --surface-input: #081524;
+
+  /* Structural lines */
+  --line: #1a3048;
+  --line-strong: #294866;
+  --line-accent: #287db0;
+
+  /* Typography */
+  --text: #edf7ff;
+  --text-muted: #a1bad0;
+  --text-dim: #718da8;
+  --text-xdim: #4a6682;
+
+  /* Brand palette */
+  --blue: #49aaff;
+  --blue-dim: #277ed1;
+  --blue-glow: #49aaff24;
+  --blue-glow-soft: #49aaff0c;
+
+  --cyan: #48e0e6;
+  --cyan-dim: #1da9b9;
+  --cyan-glow: #48e0e620;
+
+  /* Status palette */
+  --purple: #9b8cff;
+  --purple-dim: #6d5bd0;
+
+  --green: #45d6a0;
+  --green-dim: #228b68;
+  --green-glow: #45d6a020;
+
+  --amber: #ffca70;
+  --amber-dim: #b17d31;
+  --amber-glow: #ffca701a;
+
+  --red: #ff778b;
+  --red-dim: #b63f59;
+  --red-glow: #ff778b20;
+
+  /* Sidebar */
+  --sidebar-w: 252px;
+  --sidebar-bg: #081422;
+  --sidebar-border: #182b40;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* Geometry */
+  --radius-sm: 10px;
+  --radius-md: 15px;
+  --radius-lg: 20px;
+  --radius-xl: 26px;
+
+  /* Spatial shadow system */
+  --shadow-sm:
+    4px 4px 10px #02081270,
+    -3px -3px 9px #1a34501b;
+
+  --shadow-md:
+    8px 8px 20px #02081280,
+    -5px -5px 15px #1c39521c;
+
+  --shadow-lg:
+    14px 16px 36px #02081299,
+    -7px -7px 22px #1c395222;
+
+  --shadow-panel:
+    inset 0 1px 0 #ffffff08;
+
+  --shadow-inset:
+    inset 4px 4px 10px #02081270,
+    inset -3px -3px 9px #1a34501b;
+
+  --shadow-glow-blue:
+    0 0 0 1px #49aaff20,
+    0 0 24px #277ed11c;
+
+  --shadow-glow-cyan:
+    0 0 0 1px #48e0e620,
+    0 0 26px #48e0e615;
+
+  /* Motion */
+  --dur-fast: 140ms;
+  --dur-base: 220ms;
+  --dur-slow: 380ms;
+  --dur-xslow: 600ms;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-inout: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.35, 0.64, 1);
+
+  --focus-ring: 0 0 0 3px #49aaff35;
+
+  /* Layers */
+  --z-sidebar: 100;
+  --z-header: 50;
+  --z-overlay: 200;
+  --z-toast: 300;
+}

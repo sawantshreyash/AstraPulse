@@ -1,0 +1,110 @@
+from fastapi.testclient import TestClient
+
+from app.main import app
+
+
+client = TestClient(app)
+
+
+def test_scenario_catalog_lists_supported_and_explicit_gaps() -> None:
+    response = client.get("/api/scenarios")
+    assert response.status_code == 200
+    catalog = {item["scenario_id"]: item for item in response.json()}
+    assert catalog["normal"]["supported"] is True
+    assert catalog["low_latency_consistency"]["supported"] is False
+    assert "gap" in catalog["low_latency_consistency"]
+
+
+def test_burst_scenario_is_reproducible_and_restores_state() -> None:
+    payload = {"seed": 9, "request_count": 5, "policy": "astrapulse"}
+    first = client.post("/api/scenarios/burst/run", json=payload)
+    second = client.post("/api/scenarios/burst/run", json=payload)
+    assert first.status_code == second.status_code == 200
+    assert first.json() == second.json()
+    assert first.json()["worker_state_restored"] is True
+
+
+def test_each_supported_scenario_executes() -> None:
+    catalog = client.get("/api/scenarios").json()
+    supported = [
+        item["scenario_id"] for item in catalog if item["supported"]
+    ]
+    for scenario_id in supported:
+        response = client.post(
+            f"/api/scenarios/{scenario_id}/run",
+            json={"seed": 3, "request_count": 2},
+        )
+        assert response.status_code == 200
+        assert response.json()["status"] == "completed"
+        assert response.json()["worker_state_restored"] is True
+
+
+def test_hard_deadline_scenario_has_no_feasible_route() -> None:
+    response = client.post(
+        "/api/scenarios/hard_deadline_infeasible/run",
+        json={"seed": 1, "request_count": 1},
+    )
+    assert response.status_code == 200
+    decision = response.json()["decisions"][0]
+    assert decision["status"] == "no_eligible_worker"
+    assert decision["selected_worker"] is None
+    assert all(candidate["eligible"] is False for candidate in decision["candidates"])
+
+
+def test_worker_failure_recovery_restores_eligibility() -> None:
+    response = client.post(
+        "/api/scenarios/worker_failure_recovery/run",
+        json={"seed": 1, "request_count": 1},
+    )
+    assert response.status_code == 200
+    decisions = response.json()["decisions"]
+    assert decisions[0]["status"] == "routed"
+    assert decisions[1]["status"] == "routed"
+    failed_worker = next(
+        candidate
+        for candidate in decisions[0]["candidates"]
+        if candidate["worker_id"] == "worker-1"
+    )
+    assert failed_worker["eligible"] is False
+    assert response.json()["worker_state_restored"] is True
+
+
+def test_overload_scenario_records_alternative_and_candidate_scores() -> None:
+    response = client.post(
+        "/api/scenarios/preferred_overloaded/run",
+        json={"seed": 2, "request_count": 1},
+    )
+    assert response.status_code == 200
+    decision = response.json()["decisions"][0]
+    assert decision["selected_worker"] != "worker-2"
+    worker_two = next(
+        candidate
+        for candidate in decision["candidates"]
+        if candidate["worker_id"] == "worker-2"
+    )
+    assert worker_two["eligible"] is True
+    assert any(candidate["score"] is not None for candidate in decision["candidates"])
+
+
+def test_unknown_scenario_is_rejected() -> None:
+    response = client.post("/api/scenarios/unknown/run", json={})
+    assert response.status_code == 404
+
+
+def test_scenario_validation_and_run_audit_are_explicit() -> None:
+    invalid = client.post(
+        "/api/scenarios/normal/run",
+        json={"seed": -1, "request_count": 1},
+    )
+    assert invalid.status_code == 422
+
+    response = client.post(
+        "/api/scenarios/normal/run",
+        json={"seed": 4, "request_count": 1},
+    )
+    assert response.status_code == 200
+    result = response.json()
+    runs = client.get("/api/scenario-runs")
+    assert runs.status_code == 200
+    assert any(item["run_id"] == result["run_id"] for item in runs.json())
+    assert result["decisions"][0]["simulated_outcome"]["status"] == "completed"
